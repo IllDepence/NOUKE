@@ -1,3 +1,7 @@
+body {
+margin: 0px;
+padding: 0px;
+}
 #gameContainer {
 margin: 25px;
 width: 803px;

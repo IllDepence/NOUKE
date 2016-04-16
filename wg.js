@@ -32,8 +32,7 @@ Entity.prototype.isAlive = function() {
     }
 Entity.prototype.spawn = function(gameField) {
     gameField.node.appendChild(this.node);
-    this.node.style.position = 'relative';
-    this.node.style.display = '';
+    this.node.style.position = 'absolute';
     }
 Entity.prototype.tick = function() {
     // stay in level bounds
@@ -41,18 +40,34 @@ Entity.prototype.tick = function() {
     if (nextX>=0 && nextX+this.width<=window.GAME_MAX_X) {
         this.setXPos(nextX);
         }
+    else {
+        if (nextX<0) {
+            this.setXPos(0);
+            }
+        if (nextX+this.width>window.GAME_MAX_X) {
+            this.setXPos(window.GAME_MAX_X-this.width);
+            }
+        }
     var nextY = this.yPos + this.ySpeed;
     if (nextY>=0 && nextY+this.height<=window.GAME_MAX_Y) {
         this.setYPos(nextY);
         }
+    else {
+        if (nextY<0) {
+            this.setYPos(0);
+            }
+        if (nextY+this.height>window.GAME_MAX_Y) {
+            this.setYPos(window.GAME_MAX_Y-this.height);
+            }
+        }
     }
 Entity.prototype.setXPos = function(x) {
     this.xPos = x;
-    this.node.style.left = this.xPos + 'px';
+    this.node.style.left = (this.xPos + 25) +'px';
     }
 Entity.prototype.setYPos = function(y) {
     this.yPos = y;
-    this.node.style.top = this.yPos + 'px';
+    this.node.style.top = (this.yPos + 25) + 'px';
     }
 Entity.prototype.accX = function(d) {
     this.xSpeed = this.xSpeed+d;
@@ -76,18 +91,31 @@ Entity.prototype.decelYPos = function() {
 Entity.prototype.decelYNeg = function() {
     this.ySpeed = this.ySpeed + (this.ySpeed==0 ? 0 : 1);
     }
+Entity.prototype.collidesWith = function(e) {
+    var sLeft = this.xPos;
+    var sRight = this.xPos + this.width;
+    var sTop = this.yPos;
+    var sBottom = this.yPos + this.height;
+    var eLeft = e.xPos;
+    var eRight = e.xPos + e.width;
+    var eTop = e.yPos;
+    var eBottom = e.yPos + e.height;
+    return ((sRight>=eLeft) && (sLeft<=eRight) && (sBottom>=eTop) && (sTop<=eBottom));
+    }
 
 Player.prototype = new Entity();
 Player.prototype.constructor = Player;
 function Player(xPos, yPos) {
     this.init(xPos, yPos, 1);
     this.node = this.createNode();
-    this.maxSpeed = 5;
+    this.maxSpeed = 8;
     this.setHitbox(35, 34);
     }
 Player.prototype.createNode = function() {
     img = document.createElement('img');
+    img.setAttribute('id', this.id);
     img.setAttribute('src', 'img/player.png');
+    img.setAttribute('style', 'display:block; width:35px; height:34px;');
     return img;
     }
 Player.prototype.walkX = function(d) {
@@ -100,6 +128,14 @@ Player.prototype.walkY = function(d) {
         this.accY(d);
         }
     }
+Player.prototype.morph = function() {
+    for (var i=0; i<game.entities.length; i++) {
+        var e = game.entities[i];
+        if (e instanceof NPC && this.collidesWith(e)) {
+            e.morph();
+            }
+        }
+    }
 
 NPC.prototype = new Entity();
 NPC.prototype.constructor = NPC;
@@ -109,8 +145,11 @@ function NPC(xPos, yPos, alive) {
     this.shape = 0;
     this.node = this.createNode();
     this.setHitbox(NPC.size, NPC.size);
+    this.morphing = 0;
     }
 NPC.prototype.morph = function() {
+    if (this.morphing) return;
+    this.morphing = 1;
     if (this.shape == 0) {  /* hat */
         targetShape = 'Star';
         targetColor = 'Yellow';
@@ -124,6 +163,7 @@ NPC.prototype.morph = function() {
     aniNode1.beginElement();
     aniNode2.beginElement();
     this.shape = 1 - this.shape;
+    setTimeout((function(self) {return function() {self.morphing = 0;}})(this), 600);
     }
 NPC.prototype.createNode = function() {
     id = this.id;
@@ -174,7 +214,6 @@ NPC.prototype.createNode = function() {
 function Game() {
     this.gameField = new GameField();
     this.infoFieldNode = document.querySelector('#infoField');
-    console.log(this.infoFieldNode);
     this.entities = [];
     this.currKeyCodes = [];
     }
@@ -184,8 +223,8 @@ Game.prototype.start = function() {
     this.player.spawn(this.gameField);
     this.entities.push(this.player);
 
-    adam = new NPC(10, 110, 1);
-    eve = new NPC(110, 210, 1);
+    adam = new NPC(350, 200, 1);
+    eve = new NPC(500, 40, 1);
     this.entities.push(adam);
     this.entities.push(eve);
     adam.spawn(this.gameField);
@@ -200,7 +239,7 @@ Game.prototype.tick = function() {
     for(var i=0; i<this.currKeyCodes.length; i++) {
         switch(this.currKeyCodes[i]) {
             case 16: //shift
-                //game.player.morph();
+                game.player.morph();
                 break;
             case 32: //space bar
                 //game.player.infect();
@@ -232,12 +271,22 @@ Game.prototype.tick = function() {
         game.player.decelYPos();
         }
     // entities
+    infostr = '';
     for (var i=0; i<this.entities.length; i++) {
         var e = this.entities[i];
         e.tick();
+        if (e instanceof Player) {
+            for (var j=0; j<this.entities.length; j++) {
+                var f = this.entities[j];
+                if (f instanceof NPC && e.collidesWith(f)) {
+                    infostr += 'collision';
+                    }
+                }
+            }
         }
     // info
-    this.infoFieldNode.innerHTML = game.currKeyCodes.toString();
+    infostr += '<br>' + game.currKeyCodes.toString();
+    this.infoFieldNode.innerHTML = infostr
     }
 
 function GameField() {
