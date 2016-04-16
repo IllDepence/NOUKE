@@ -1,6 +1,10 @@
 body {
-margin: 0px;
-padding: 0px;
+margin: 0;
+padding: 0;
+}
+p {
+margin: 0;
+padding: 0;
 }
 #gameContainer {
 margin: 25px;
@@ -23,6 +27,16 @@ width: 300px;
 height: 500px;
 background-image:url('img/bgr.png');
 }
-#infoField * {
-margin: 10px;
+#infoField > * {
+margin: 0 10px 0 10px;
+font-family: serif;
+}
+#infoField > p {
+font-size: 13px;
+}
+#infoField > h3 {
+margin-top: 25px;
+margin-bottom: 12px;
+text-align: center;
+font-size: 16px;
 }
