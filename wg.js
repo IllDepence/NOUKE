@@ -115,7 +115,7 @@ Player.prototype.createNode = function() {
     img = document.createElement('img');
     img.setAttribute('id', this.id);
     img.setAttribute('src', 'img/player.png');
-    img.setAttribute('style', 'display:block; width:35px; height:34px;');
+    img.setAttribute('style', 'display:block; width:35px; height:34px; z-index: 9999');
     return img;
     }
 Player.prototype.walkX = function(d) {
@@ -271,7 +271,7 @@ Game.prototype.tick = function() {
         game.player.decelYPos();
         }
     // entities
-    infostr = '';
+    infostr = '<p align="center"><strong>MISSION STATUS</strong></p><p>';
     for (var i=0; i<this.entities.length; i++) {
         var e = this.entities[i];
         e.tick();
@@ -286,7 +286,7 @@ Game.prototype.tick = function() {
         }
     // info
     infostr += '<br>' + game.currKeyCodes.toString();
-    this.infoFieldNode.innerHTML = infostr
+    this.infoFieldNode.innerHTML = infostr + '</p>';
     }
 
 function GameField() {

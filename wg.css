@@ -12,6 +12,7 @@ float: left;
 height: 500px;
 width: 500px;
 border: solid 1px #000;
+background-image:url('img/bgl.png');
 }
 #infoField {
 border: solid 1px #000;
@@ -20,4 +21,8 @@ float: right;
 clear: both;
 width: 300px;
 height: 500px;
+background-image:url('img/bgr.png');
+}
+#infoField * {
+margin: 10px;
 }
