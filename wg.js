@@ -1,0 +1,48 @@
+document.HAT_COLOR="#53B848";
+document.HAT_POINTS="19.098,95.106 50,95.106 80.902,95.106 89.463,58.897 80.000,36.327 62.028,16.017 50,8 37.971,16.017 20,36.327 10.537,58.897";
+document.STAR_COLOR="#FFD41D";
+document.STAR_POINTS="19.098,95.106 50,73.038 80.902,95.106 69.463,58.897 100,36.327 62.028,36.017 50,0 37.971,36.017 0,36.327 30.537,58.897";
+
+function createNPC(id) {
+    svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+    svg.setAttribute('id', id);
+    svg.setAttribute('viewBox', '0 0 100 100');
+    svg.setAttribute('style', 'width: 50px; height: 50px;');
+    poly = document.createElementNS('http://www.w3.org/2000/svg', 'polygon');
+    poly.setAttribute('fill', document.HAT_COLOR);
+    poly.setAttribute('points', document.HAT_POINTS);
+    ani1 = document.createElementNS('http://www.w3.org/2000/svg', 'animate');
+    ani1.setAttribute('id', id+'_morphToStar');
+    ani1.setAttribute('begin', 'indefinite');
+    ani1.setAttribute('fill', 'freeze');
+    ani1.setAttribute('attributeName', 'points');
+    ani1.setAttribute('dur', '500ms');
+    ani1.setAttribute('to', document.STAR_POINTS);
+    ani2 = document.createElementNS('http://www.w3.org/2000/svg', 'animate');
+    ani2.setAttribute('id', id+'_morphToHat');
+    ani2.setAttribute('begin', 'indefinite');
+    ani2.setAttribute('fill', 'freeze');
+    ani2.setAttribute('attributeName', 'points');
+    ani2.setAttribute('dur', '500ms');
+    ani2.setAttribute('to', document.HAT_POINTS);
+    ani3 = document.createElementNS('http://www.w3.org/2000/svg', 'animate');
+    ani3.setAttribute('id', id+'_morphToYellow');
+    ani3.setAttribute('begin', 'indefinite');
+    ani3.setAttribute('fill', 'freeze');
+    ani3.setAttribute('attributeName', 'fill');
+    ani3.setAttribute('dur', '500ms');
+    ani3.setAttribute('to', document.STAR_COLOR);
+    ani4 = document.createElementNS('http://www.w3.org/2000/svg', 'animate');
+    ani4.setAttribute('id', id+'_morphToGreen');
+    ani4.setAttribute('begin', 'indefinite');
+    ani4.setAttribute('fill', 'freeze');
+    ani4.setAttribute('attributeName', 'fill');
+    ani4.setAttribute('dur', '500ms');
+    ani4.setAttribute('to', document.HAT_COLOR);
+    svg.appendChild(poly);
+    poly.appendChild(ani1);
+    poly.appendChild(ani2);
+    poly.appendChild(ani3);
+    poly.appendChild(ani4);
+    document.body.appendChild(svg);
+}
