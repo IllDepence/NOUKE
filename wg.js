@@ -30,8 +30,8 @@ Entity.prototype.setHitbox = function(width, height) {
 Entity.prototype.isAlive = function() {
     return this.alive;
     }
-Entity.prototype.spawn = function(gameField) {
-    gameField.node.appendChild(this.node);
+Entity.prototype.spawn = function() {
+    game.gameField.node.appendChild(this.node);
     this.node.style.position = 'absolute';
     }
 Entity.prototype.tick = function() {
@@ -110,6 +110,7 @@ function Player(xPos, yPos) {
     this.node = this.createNode();
     this.maxSpeed = 8;
     this.setHitbox(35, 34);
+    this.lastMorph = 0;
     }
 Player.prototype.createNode = function() {
     img = document.createElement('img');
@@ -129,10 +130,13 @@ Player.prototype.walkY = function(d) {
         }
     }
 Player.prototype.makeMorph = function() {
+    if (Math.abs(this.lastMorph - Date.now()) < 3) return;
     for (var i=0; i<game.entities.length; i++) {
         var e = game.entities[i];
         if (e instanceof NPC && this.collidesWith(e) && e.shape == 0) {
             e.morph();
+            this.lastMorph = Date.now();
+            return;
             }
         }
     }
@@ -227,6 +231,10 @@ NPC.prototype.findNearestOther = function() {
         var o = game.entities[i];
         if (o == this) continue;
         var dist = this.distTo(o);
+        if (dist < 1) {
+            console.log('lel');
+            o.xPos+=1;
+            }
         if (dist < min_dist) {
             nearest = o;
             min_dist = dist;
@@ -234,18 +242,23 @@ NPC.prototype.findNearestOther = function() {
         }
     return nearest;
     }
+
 NPC.prototype.socialize = function() {
     candidate = this.findNearestOther();
     minDist = (candidate.shape == 0 ? 10 : 0);
-    if (this.distTo(candidate) > minDist) {
+    modifier = 1;
+    if (this.distTo(candidate) < 9 && candidate.shape == 0 && this.shape == 0) {
+        modifier = -1;
+        }
+    if (this.distTo(candidate) > minDist || modifier == -1) {
         if(Math.abs(this.xSpeed)<this.maxSpeed) {
-            this.accX(this.xDirTo(candidate));
+            this.accX(modifier * this.xDirTo(candidate));
             }
         else {
             this.decel();
             }
         if(Math.abs(this.ySpeed)<this.maxSpeed) {
-            this.accY(this.yDirTo(candidate));
+            this.accY(modifier * this.yDirTo(candidate));
             }
         else {
             this.decel();
@@ -254,6 +267,22 @@ NPC.prototype.socialize = function() {
     else {
         this.xSpeed = 0;
         this.ySpeed = 0;
+        }
+    }
+
+NPC.prototype.repoduce = function() {
+    for (var i=0; i<game.entities.length; i++) {
+        var o = game.entities[i];
+        if (o == this) continue;
+        if (!o instanceof NPC) continue;
+        if (this.distTo(o) > 1) continue;
+        if (this.shape != o.shape) { // one star, one hat
+            if (this.shape == 1) this.morph();
+            else o.morph();
+            child = new NPC(this.xPos, o.yPos, 1);
+            game.entities.push(child);
+            child.spawn();
+            }
         }
     }
 
@@ -267,18 +296,15 @@ function Game() {
 
 Game.prototype.start = function() {
     this.player = new Player(250, 250);
-    this.player.spawn(this.gameField);
+    this.player.spawn();
     this.entities.push(this.player);
 
     adam = new NPC(0, 200, 1);
     eve = new NPC(500, 40, 1);
-    lol = new NPC(400, 340, 1);
     this.entities.push(adam);
     this.entities.push(eve);
-    this.entities.push(lol);
-    adam.spawn(this.gameField);
-    eve.spawn(this.gameField);
-    lol.spawn(this.gameField);
+    adam.spawn();
+    eve.spawn();
 
     //this.intvID = self.setInterval((function(self) {return function() {test.morph();}})(this), 1000);
     draw();
@@ -327,6 +353,7 @@ Game.prototype.tick = function() {
         e.tick();
         if (e instanceof NPC) {
             e.socialize();
+            e.repoduce();
             }
         if (e instanceof Player) {
             for (var j=0; j<this.entities.length; j++) {
