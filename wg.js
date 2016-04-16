@@ -1,9 +1,57 @@
+/* - - - G L O B A L S - - - */
 document.HAT_COLOR="#53B848";
 document.HAT_POINTS="19.098,95.106 50,95.106 80.902,95.106 89.463,58.897 80.000,36.327 62.028,16.017 50,8 37.971,16.017 20,36.327 10.537,58.897";
 document.STAR_COLOR="#FFD41D";
 document.STAR_POINTS="19.098,95.106 50,73.038 80.902,95.106 69.463,58.897 100,36.327 62.028,36.017 50,0 37.971,36.017 0,36.327 30.537,58.897";
+document.entityCounter = 0;
 
-function createNPC(id) {
+/* - - - C L A S S E S - - - */
+/* - entities - */
+function Entity() {}
+Entity.prototype.init = function(xPos, yPos, alive) {
+    this.xPos = xPos;
+    this.yPos = yPos;
+    this.alive = alive;
+    this.id = 'e_' + document.entityCounter;
+    document.entityCounter += 1;
+    console.log('created entity #' + this.id);
+    }
+Entity.prototype.isAlive = function() {
+    return this.alive;
+    }
+Entity.prototype.spawn = function(gameField) {
+    gameField.node.appendChild(this.node);
+    }
+
+Player.prototype = new Entity();
+Player.prototype.constructor = Player;
+function Player(xPos, yPos) {
+    }
+
+NPC.prototype = new Entity();
+NPC.prototype.constructor = NPC;
+function NPC(xPos, yPos, alive) {
+    this.init(xPos, yPos, alive);
+    this.shape = 0;
+    this.node = this.createNode();
+    }
+NPC.prototype.morph = function() {
+    if (this.shape == 0) {  /* hat */
+        targetShape = 'Star';
+        targetColor = 'Yellow';
+        }
+    else {                  /* star */
+        targetShape = 'Hat';
+        targetColor = 'Green';
+        }
+    aniNode1 = document.querySelector('#' + this.id + '_morphTo' + targetShape);
+    aniNode2 = document.querySelector('#' + this.id + '_morphTo' + targetColor);
+    aniNode1.beginElement();
+    aniNode2.beginElement();
+    this.shape = 1 - this.shape;
+    }
+NPC.prototype.createNode = function() {
+    id = this.id;
     svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
     svg.setAttribute('id', id);
     svg.setAttribute('viewBox', '0 0 100 100');
@@ -44,5 +92,25 @@ function createNPC(id) {
     poly.appendChild(ani2);
     poly.appendChild(ani3);
     poly.appendChild(ani4);
-    document.body.appendChild(svg);
+    return svg;
 }
+
+/* - not entities - */
+function Game() {
+    this.gameField = new GameField();
+    }
+
+Game.prototype.start = function() {
+    test = new NPC(0, 0, 1);
+    test.spawn(this.gameField);
+    this.intvID = self.setInterval((function(self) {return function() {test.morph();}})(this), 1000);
+    }
+
+function GameField() {
+    this.node = document.querySelector('#gameField');
+    this.width = 500;
+    this.height = 500;
+    }
+
+document.game = new Game();
+document.game.start();

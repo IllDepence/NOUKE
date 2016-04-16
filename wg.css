@@ -1,0 +1,19 @@
+#gameContainer {
+margin: 25px;
+width: 803px;
+height: 500px;
+}
+#gameField {
+float: left;
+height: 500px;
+width: 500px;
+border: solid 1px #000;
+}
+#infoField {
+border: solid 1px #000;
+border-left: none;
+float: right;
+clear: both;
+width: 300px;
+height: 500px;
+}
