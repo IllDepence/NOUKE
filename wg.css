@@ -26,6 +26,7 @@ clear: both;
 width: 300px;
 height: 500px;
 background-image:url('img/bgr.png');
+z-index: 950;
 }
 #infoField > * {
 margin: 0 10px 0 10px;
@@ -39,4 +40,17 @@ margin-top: 25px;
 margin-bottom: 12px;
 text-align: center;
 font-size: 16px;
+}
+div[id^="e_"]::before {
+content: " ";
+background-image:url('img/viewfield.png');
+background-repeat: no-repeat;
+padding-left: 68px;
+margin-left: -68px;
+padding-top: 62px;
+margin-top: -62px;
+width: 187px;
+height: 187px;
+z-index: 900;
+position: absolute;
 }

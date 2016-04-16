@@ -173,8 +173,9 @@ NPC.prototype.morph = function() {
     }
 NPC.prototype.createNode = function() {
     id = this.id;
+    div = document.createElement('div');
+    div.setAttribute('id', id);
     svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
-    svg.setAttribute('id', id);
     svg.setAttribute('viewBox', '0 0 100 100');
     svg.setAttribute('style', 'width: '+NPC.size+'px; height: '+NPC.size+'px;');
     poly = document.createElementNS('http://www.w3.org/2000/svg', 'polygon');
@@ -208,22 +209,15 @@ NPC.prototype.createNode = function() {
     ani4.setAttribute('attributeName', 'fill');
     ani4.setAttribute('dur', '500ms');
     ani4.setAttribute('to', window.HAT_COLOR);
+    div.appendChild(svg);
     svg.appendChild(poly);
     poly.appendChild(ani1);
     poly.appendChild(ani2);
     poly.appendChild(ani3);
     poly.appendChild(ani4);
-    return svg;
+    return div;
 }
 NPC.prototype.distTo = function(o) {
-    var sLeft = this.xPos;
-    var sRight = this.xPos + this.width;
-    var sTop = this.yPos;
-    var sBottom = this.yPos + this.height;
-    var oLeft = o.xPos;
-    var oRight = o.xPos + o.width;
-    var oTop = o.yPos;
-    var oBottom = o.yPos + o.height;
     return Math.sqrt(Math.abs(o.xPos - this.xPos) + Math.abs(o.yPos - this.yPos));
     }
 NPC.prototype.xDirTo = function(o) {
