@@ -148,6 +148,7 @@ Player.prototype.makeMorph = function() {
             if (dist <= 12) {
                 observer.bust(e);
                 e.getBusted();
+                return;
                 }
             else {
                 e.morph();
@@ -368,6 +369,8 @@ function Game() {
     this.infoFieldNode = document.querySelector('#infoField');
     this.entities = [];
     this.currKeyCodes = [];
+    this.state = 0; // 0 = intro, 1 = game, 2 = end
+    this.win = 0;
     }
 
 Game.prototype.start = function() {
@@ -375,15 +378,27 @@ Game.prototype.start = function() {
     this.player.spawn();
 
     adam = new NPC(0, 200, 1);
-    eve = new NPC(500, 40, 1);
+    evan = new NPC(500, 40, 1);
     adam.spawn();
-    eve.spawn();
+    evan.spawn();
 
     //this.intvID = self.setInterval((function(self) {return function() {test.morph();}})(this), 1000);
     draw();
     }
 
 Game.prototype.tick = function() {
+    if (this.state == 2) {
+        for (var i=0; i<this.entities; i++) {
+            this.entities[i].deSpawn();
+            }
+        if (this.win == 0) {
+            this.gameField.node.innerHTML = '<div style="margin: 0px auto; width: 140px; padding-top: 140px"><p style="text-align: center;">G&thinsp;A&thinsp;M&thinsp;E&emsp;O&thinsp;V&thinsp;E&thinsp;R</p><img src="img/sad_obake.gif"></div>';
+            }
+        else {
+            this.gameField.node.innerHTML = '<div style="margin: 0px auto; width: 193px; padding-top: 140px"><p style="text-align: center;">S&thinsp;U&thinsp;C&thinsp;C&thinsp;E&thinsp;S&thinsp;S</p><img src="img/happy_obake.gif"></div>';
+            }
+        return;
+        }
     // keyboard input
     for(var i=0; i<this.currKeyCodes.length; i++) {
         switch(this.currKeyCodes[i]) {
@@ -439,12 +454,20 @@ Game.prototype.tick = function() {
                 }
             }
         }
+    if (population < 2) {
+        this.end(0);
+        }
     // info
     debugstr += '<br>' + game.currKeyCodes.toString();
     debNode = this.infoFieldNode.querySelector('#debug');
     debNode.innerHTML = debugstr + '';
     popNode = this.infoFieldNode.querySelector('#pop');
     popNode.innerHTML = population + '';
+    }
+
+Game.prototype.end = function(win) {
+    this.state = 2;
+    this.win = win;
     }
 
 function GameField() {
