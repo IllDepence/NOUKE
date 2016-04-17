@@ -27,6 +27,7 @@ width: 300px;
 height: 500px;
 background-image:url('img/bgr.png');
 z-index: 950;
+overflow-y: scroll;
 }
 #infoField > * {
 margin: 0 10px 0 10px;
@@ -34,10 +35,11 @@ font-family: serif;
 }
 #infoField > p {
 font-size: 13px;
+line-height: 1.25;
 }
 #infoField > h3 {
-margin-top: 25px;
-margin-bottom: 12px;
+margin-top: 20px;
+margin-bottom: 7px;
 text-align: center;
 font-size: 16px;
 }

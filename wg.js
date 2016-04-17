@@ -371,6 +371,9 @@ function Game() {
     this.currKeyCodes = [];
     this.state = 0; // 0 = intro, 1 = game, 2 = end
     this.win = 0;
+    this.hoursLeft = 24;
+    this.countDownInvID = null;
+    this.populationGoal = 15;
     }
 
 Game.prototype.start = function() {
@@ -382,23 +385,12 @@ Game.prototype.start = function() {
     adam.spawn();
     evan.spawn();
 
-    //this.intvID = self.setInterval((function(self) {return function() {test.morph();}})(this), 1000);
+    this.countDownInvID = self.setInterval((function(self) {return function() {self.countDown();}})(this), 5000);
+
     draw();
     }
 
 Game.prototype.tick = function() {
-    if (this.state == 2) {
-        for (var i=0; i<this.entities; i++) {
-            this.entities[i].deSpawn();
-            }
-        if (this.win == 0) {
-            this.gameField.node.innerHTML = '<div style="margin: 0px auto; width: 140px; padding-top: 140px"><p style="text-align: center;">G&thinsp;A&thinsp;M&thinsp;E&emsp;O&thinsp;V&thinsp;E&thinsp;R</p><img src="img/sad_obake.gif"></div>';
-            }
-        else {
-            this.gameField.node.innerHTML = '<div style="margin: 0px auto; width: 193px; padding-top: 140px"><p style="text-align: center;">S&thinsp;U&thinsp;C&thinsp;C&thinsp;E&thinsp;S&thinsp;S</p><img src="img/happy_obake.gif"></div>';
-            }
-        return;
-        }
     // keyboard input
     for(var i=0; i<this.currKeyCodes.length; i++) {
         switch(this.currKeyCodes[i]) {
@@ -435,7 +427,6 @@ Game.prototype.tick = function() {
         game.player.decelYPos();
         }
     // entities
-    debugstr = '';
     population = 0;
     for (var i=0; i<this.entities.length; i++) {
         var e = this.entities[i];
@@ -445,29 +436,44 @@ Game.prototype.tick = function() {
             e.socialize();
             e.reproduce();
             }
-        if (e instanceof Player) {
-            for (var j=0; j<this.entities.length; j++) {
-                var f = this.entities[j];
-                if (f instanceof NPC && e.collidesWith(f)) {
-                    debugstr += 'collision';
-                    }
-                }
+        }
+    if (this.state == 2) {
+        for (var i=0; i<this.entities; i++) {
+            this.entities[i].deSpawn();
             }
+        if (this.win == 0) {
+            this.gameField.node.innerHTML = '<div style="margin: 0px auto; width: 140px; padding-top: 140px"><p style="text-align: center;">G&thinsp;A&thinsp;M&thinsp;E&emsp;O&thinsp;V&thinsp;E&thinsp;R</p><img src="img/sad_obake.gif"><p style="text-align: center; color: #555;">click to restart</p></div>';
+            }
+        else {
+            this.gameField.node.innerHTML = '<div style="margin: 0px auto; width: 193px; padding-top: 140px"><p style="text-align: center;">S&thinsp;U&thinsp;C&thinsp;C&thinsp;E&thinsp;S&thinsp;S</p><img src="img/happy_obake.gif"><p style="text-align: center; color: #555;">Score: '+population+'<br><br>click to restart</p></div>';
+            this.infoFieldNode.innerHTML = '<h3>E P I L O G U E</h3><p>Shortly after Takashi\'s spirit ascended into the plain of high heaven a wave of migration brought new people into the village.<br></p>';
+            }
+        return;
         }
     if (population < 2) {
         this.end(0);
         }
+    if (this.hoursLeft < 1) {
+        if (population < this.populationGoal) this.end(0);
+        else this.end(1);
+        }
     // info
-    debugstr += '<br>' + game.currKeyCodes.toString();
-    debNode = this.infoFieldNode.querySelector('#debug');
-    debNode.innerHTML = debugstr + '';
     popNode = this.infoFieldNode.querySelector('#pop');
     popNode.innerHTML = population + '';
+    hleftNode = this.infoFieldNode.querySelector('#hleft');
+    hleftNode.innerHTML = this.hoursLeft + '';
     }
 
 Game.prototype.end = function(win) {
+    clearInterval(this.countDownInvID);
     this.state = 2;
     this.win = win;
+    gc = document.querySelector('#gameContainer');
+    gc.setAttribute('onClick', 'location.reload()');
+    }
+
+Game.prototype.countDown = function() {
+    this.hoursLeft -= 1;
     }
 
 function GameField() {
@@ -491,6 +497,7 @@ document.onkeyup = function(e) {
 var game = new Game();
 
 function begin() {
+    game.gameField.node.innerHTML = '';
     game.start();
     gc = document.querySelector('#gameContainer');
     gc.setAttribute('onClick', '');
