@@ -1,8 +1,10 @@
 /* - - - G L O B A L S - - - */
-window.HAT_COLOR="#53B848";
-window.HAT_POINTS="19.098,95.106 50,95.106 80.902,95.106 89.463,58.897 80.000,36.327 62.028,16.017 50,8 37.971,16.017 20,36.327 10.537,58.897";
-window.STAR_COLOR="#FFD41D";
-window.STAR_POINTS="19.098,95.106 50,73.038 80.902,95.106 69.463,58.897 100,36.327 62.028,36.017 50,0 37.971,36.017 0,36.327 30.537,58.897";
+window.M_COLOR="#5364a2";
+window.M_BODY_POINTS="19.098,100 50,73.484 80.902,100 69.463,56.493 100,29.374 62.029,29 37.971,29 0,29.374 30.537,56.493";
+window.M_HAIR_POINTS="29,11.803 71,11.803 59.185,3.278 40.815,3.278";
+window.F_COLOR="#b14e87";
+window.F_BODY_POINTS="19.098,100 50,100 80.902,100 69.463,56.493 100,49.374 62.029,29 37.971,29 0,49.374 30.537,56.493";
+window.F_HAIR_POINTS="27,21.803 73,21.803 59.185,3.278 40.815,3.278";
 window.GAME_MAX_X = 500;
 window.GAME_MAX_Y = 500;
 
@@ -176,21 +178,35 @@ function NPC(xPos, yPos, alive) {
 NPC.prototype.morph = function() {
     if (this.morphing) return;
     this.morphing = 1;
-    if (this.shape == 0) {  /* hat */
-        targetShape = 'Star';
-        targetColor = 'Yellow';
+    if (this.shape == 0) {  /* male */
+        targetShape = 'Fem';
         }
-    else {                  /* star */
-        targetShape = 'Hat';
-        targetColor = 'Green';
+    else {                  /* female */
+        targetShape = 'Mal';
         }
-    aniNode1 = document.querySelector('#' + this.id + '_morphTo' + targetShape);
-    aniNode2 = document.querySelector('#' + this.id + '_morphTo' + targetColor);
+    aniNode1 = document.querySelector('#' + this.id + '_morphTo' + targetShape + 'B');
+    aniNode2 = document.querySelector('#' + this.id + '_morphTo' + targetShape + 'H');
+    aniNode3 = document.querySelector('#' + this.id + '_morphTo' + targetShape + 'CB');
+    aniNode4 = document.querySelector('#' + this.id + '_morphTo' + targetShape + 'CH');
+    aniNode5 = document.querySelector('#' + this.id + '_morphTo' + targetShape + 'CF');
     aniNode1.beginElement();
     aniNode2.beginElement();
+    aniNode3.beginElement();
+    aniNode4.beginElement();
+    aniNode5.beginElement();
     this.shape = 1 - this.shape;
     setTimeout((function(self) {return function() { self.morphing = 0; }})(this), 600);
     setTimeout((function(self) {return function() { if(self.shape==1)self.morph(); }})(this), 10000);
+    }
+NPC.prototype.aniNode = function(id, attrName, to) {
+    node = document.createElementNS('http://www.w3.org/2000/svg', 'animate');
+    node.setAttribute('id', id);
+    node.setAttribute('begin', 'indefinite');
+    node.setAttribute('fill', 'freeze');
+    node.setAttribute('attributeName', attrName);
+    node.setAttribute('dur', '500ms');
+    node.setAttribute('to', to);
+    return node;
     }
 NPC.prototype.createNode = function() {
     id = this.id;
@@ -199,43 +215,41 @@ NPC.prototype.createNode = function() {
     svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
     svg.setAttribute('viewBox', '0 0 100 100');
     svg.setAttribute('style', 'width: '+NPC.size+'px; height: '+NPC.size+'px;');
-    poly = document.createElementNS('http://www.w3.org/2000/svg', 'polygon');
-    poly.setAttribute('fill', window.HAT_COLOR);
-    poly.setAttribute('points', window.HAT_POINTS);
-    ani1 = document.createElementNS('http://www.w3.org/2000/svg', 'animate');
-    ani1.setAttribute('id', id+'_morphToStar');
-    ani1.setAttribute('begin', 'indefinite');
-    ani1.setAttribute('fill', 'freeze');
-    ani1.setAttribute('attributeName', 'points');
-    ani1.setAttribute('dur', '500ms');
-    ani1.setAttribute('to', window.STAR_POINTS);
-    ani2 = document.createElementNS('http://www.w3.org/2000/svg', 'animate');
-    ani2.setAttribute('id', id+'_morphToHat');
-    ani2.setAttribute('begin', 'indefinite');
-    ani2.setAttribute('fill', 'freeze');
-    ani2.setAttribute('attributeName', 'points');
-    ani2.setAttribute('dur', '500ms');
-    ani2.setAttribute('to', window.HAT_POINTS);
-    ani3 = document.createElementNS('http://www.w3.org/2000/svg', 'animate');
-    ani3.setAttribute('id', id+'_morphToYellow');
-    ani3.setAttribute('begin', 'indefinite');
-    ani3.setAttribute('fill', 'freeze');
-    ani3.setAttribute('attributeName', 'fill');
-    ani3.setAttribute('dur', '500ms');
-    ani3.setAttribute('to', window.STAR_COLOR);
-    ani4 = document.createElementNS('http://www.w3.org/2000/svg', 'animate');
-    ani4.setAttribute('id', id+'_morphToGreen');
-    ani4.setAttribute('begin', 'indefinite');
-    ani4.setAttribute('fill', 'freeze');
-    ani4.setAttribute('attributeName', 'fill');
-    ani4.setAttribute('dur', '500ms');
-    ani4.setAttribute('to', window.HAT_COLOR);
+    polyB = document.createElementNS('http://www.w3.org/2000/svg', 'polygon');
+    polyB.setAttribute('fill', window.M_COLOR);
+    polyB.setAttribute('points', window.M_BODY_POINTS);
+    polyH = document.createElementNS('http://www.w3.org/2000/svg', 'polygon');
+    polyH.setAttribute('fill', window.M_COLOR);
+    polyH.setAttribute('points', window.M_HAIR_POINTS);
+    circ = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+    circ.setAttribute('cx', 50);
+    circ.setAttribute('cy', 14.5);
+    circ.setAttribute('r', 14.5);
+    circ.setAttribute('fill', window.M_COLOR);
+    aniToFemB = this.aniNode(id+'_morphToFemB', 'points', window.F_BODY_POINTS);
+    aniToFemH = this.aniNode(id+'_morphToFemH', 'points', window.F_HAIR_POINTS);
+    aniToFemCB = this.aniNode(id+'_morphToFemCB', 'fill', window.F_COLOR);
+    aniToFemCH = this.aniNode(id+'_morphToFemCH', 'fill', window.F_COLOR);
+    aniToFemCF = this.aniNode(id+'_morphToFemCF', 'fill', window.F_COLOR);
+    aniToMalB = this.aniNode(id+'_morphToMalB', 'points', window.M_BODY_POINTS);
+    aniToMalH = this.aniNode(id+'_morphToMalH', 'points', window.M_HAIR_POINTS);
+    aniToMalCB = this.aniNode(id+'_morphToMalCB', 'fill', window.M_COLOR);
+    aniToMalCH = this.aniNode(id+'_morphToMalCH', 'fill', window.M_COLOR);
+    aniToMalCF = this.aniNode(id+'_morphToMalCF', 'fill', window.M_COLOR);
     div.appendChild(svg);
-    svg.appendChild(poly);
-    poly.appendChild(ani1);
-    poly.appendChild(ani2);
-    poly.appendChild(ani3);
-    poly.appendChild(ani4);
+    svg.appendChild(polyB);
+    polyB.appendChild(aniToFemB);
+    polyB.appendChild(aniToMalB);
+    polyB.appendChild(aniToMalCB);
+    polyB.appendChild(aniToFemCB);
+    svg.appendChild(polyH);
+    polyH.appendChild(aniToFemH);
+    polyH.appendChild(aniToMalH);
+    polyH.appendChild(aniToMalCH);
+    polyH.appendChild(aniToFemCH);
+    svg.appendChild(circ);
+    circ.appendChild(aniToFemCF);
+    circ.appendChild(aniToMalCF);
     return div;
 }
 NPC.prototype.distTo = function(o) {
@@ -340,7 +354,6 @@ NPC.prototype.reproduce = function() {
                 o.morph();
                 }
             child = new NPC(this.xPos, o.yPos, 1);
-            game.entities.push(child);
             child.spawn();
             }
         }
@@ -446,7 +459,7 @@ Game.prototype.tick = function() {
             }
         else {
             this.gameField.node.innerHTML = '<div style="margin: 0px auto; width: 193px; padding-top: 140px"><p style="text-align: center;">S&thinsp;U&thinsp;C&thinsp;C&thinsp;E&thinsp;S&thinsp;S</p><img src="img/happy_obake.gif"><p style="text-align: center; color: #555;">Score: '+population+'<br><br>click to restart</p></div>';
-            this.infoFieldNode.innerHTML = '<h3>E P I L O G U E</h3><p>Shortly after Takashi\'s spirit ascended into the plain of high heaven a wave of migration brought new people into the village.<br></p>';
+            this.infoFieldNode.innerHTML = '<h3>E P I L O G U E</h3><p>Shortly after Takashi\'s spirit ascended into the plain of high heaven a wave of migration brought new people to the village.<br></p>';
             }
         return;
         }
@@ -468,7 +481,7 @@ Game.prototype.end = function(win) {
     clearInterval(this.countDownInvID);
     this.state = 2;
     this.win = win;
-    gc = document.querySelector('#gameContainer');
+    gc = document.querySelector('#gameField');
     gc.setAttribute('onClick', 'location.reload()');
     }
 
@@ -499,7 +512,7 @@ var game = new Game();
 function begin() {
     game.gameField.node.innerHTML = '';
     game.start();
-    gc = document.querySelector('#gameContainer');
+    gc = document.querySelector('#gameField');
     gc.setAttribute('onClick', '');
     }
 
