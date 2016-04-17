@@ -455,7 +455,7 @@ Game.prototype.tick = function() {
         for (var i=0; i<this.entities; i++) {
             this.entities[i].deSpawn();
             }
-        if (this.win == 1) {
+        if (this.win == 0) {
             this.gameField.node.innerHTML = '<div style="margin: 0px auto; width: 140px; padding-top: 140px"><p style="text-align: center;">G&thinsp;A&thinsp;M&thinsp;E&emsp;O&thinsp;V&thinsp;E&thinsp;R</p><img src="img/sad_obake.gif"><p style="text-align: center; color: #555;">click to restart</p></div>';
             }
         else {
