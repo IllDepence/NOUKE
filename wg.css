@@ -6,6 +6,9 @@ p {
 margin: 0;
 padding: 0;
 }
+*:focus {
+outline: none;
+}
 #gameContainer {
 margin: 25px;
 width: 803px;

@@ -387,6 +387,7 @@ function Game() {
     this.hoursLeft = 24;
     this.countDownInvID = null;
     this.populationGoal = 15;
+    this.bgm = null;
     }
 
 Game.prototype.start = function() {
@@ -454,12 +455,12 @@ Game.prototype.tick = function() {
         for (var i=0; i<this.entities; i++) {
             this.entities[i].deSpawn();
             }
-        if (this.win == 0) {
+        if (this.win == 1) {
             this.gameField.node.innerHTML = '<div style="margin: 0px auto; width: 140px; padding-top: 140px"><p style="text-align: center;">G&thinsp;A&thinsp;M&thinsp;E&emsp;O&thinsp;V&thinsp;E&thinsp;R</p><img src="img/sad_obake.gif"><p style="text-align: center; color: #555;">click to restart</p></div>';
             }
         else {
             this.gameField.node.innerHTML = '<div style="margin: 0px auto; width: 193px; padding-top: 140px"><p style="text-align: center;">S&thinsp;U&thinsp;C&thinsp;C&thinsp;E&thinsp;S&thinsp;S</p><img src="img/happy_obake.gif"><p style="text-align: center; color: #555;">Score: '+population+'<br><br>click to restart</p></div>';
-            this.infoFieldNode.innerHTML = '<h3>E P I L O G U E</h3><p>Shortly after Takashi\'s spirit ascended into the plain of high heaven a wave of migration brought new people to the village.<br></p>';
+            this.infoFieldNode.innerHTML = '<h3>E P I L O G U E</h3><p>Shortly after Takashi\'s spirit ascended into the plain of high heaven, a wave of migration brought new people to the village. With the dire need for new variation in the gene pool this was a godsend.<br><br>Over the years, Adam and Evan grew into the role of village elders and became known among the kids for their creepy stories about shape shifters and the mysterious origin of the villages “first '+population+' men“.<br><br>Takashi hopes to meet their spirits some day to tell the story of how he finally was useful and rescued the village from extinction.</p>';
             }
         return;
         }
@@ -510,10 +511,12 @@ document.onkeyup = function(e) {
 var game = new Game();
 
 function begin() {
-    game.gameField.node.innerHTML = '';
-    game.start();
     gc = document.querySelector('#gameField');
     gc.setAttribute('onClick', '');
+    game.gameField.node.innerHTML = '';
+    game.start();
+    var bgm = new Audio('bgm/bgm.ogg');
+    bgm.play();
     }
 
 var fps = 60;
