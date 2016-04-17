@@ -59,3 +59,7 @@ height: 187px;
 z-index: 900;
 position: absolute;
 }
+body:after {
+content: url('img/viewfield.png') url('img/sad_obake.gif') url('img/happy_obake.gif');
+display: none;
+}

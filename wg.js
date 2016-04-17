@@ -387,7 +387,6 @@ function Game() {
     this.hoursLeft = 24;
     this.countDownInvID = null;
     this.populationGoal = 15;
-    this.bgm = null;
     }
 
 Game.prototype.start = function() {
@@ -515,9 +514,14 @@ function begin() {
     gc.setAttribute('onClick', '');
     game.gameField.node.innerHTML = '';
     game.start();
-    var bgm = new Audio('bgm/bgm.ogg');
     bgm.play();
     }
+
+var bgm = new Audio('bgm/bgm.ogg');
+bgm.addEventListener('ended', function() {
+    this.currentTime = 0;
+    this.play();
+}, false);
 
 var fps = 60;
 function draw() {
