@@ -21,7 +21,6 @@ Entity.prototype.init = function(xPos, yPos, alive) {
     this.height = 0;
     this.id = 'e_' + window.entityCounter;
     window.entityCounter += 1;
-    console.log('created entity #' + this.id);
     }
 Entity.prototype.setHitbox = function(width, height) {
     this.width = width;
@@ -31,8 +30,15 @@ Entity.prototype.isAlive = function() {
     return this.alive;
     }
 Entity.prototype.spawn = function() {
+    game.entities.push(this);
     game.gameField.node.appendChild(this.node);
     this.node.style.position = 'absolute';
+    console.log('spawned entity #' + this.id);
+    }
+Entity.prototype.deSpawn = function() {
+    game.gameField.node.removeChild(this.node);
+    game.entities.splice(game.entities.indexOf(this), 1);
+    console.log('despawned entity #' + this.id);
     }
 Entity.prototype.tick = function() {
     // stay in level bounds
@@ -111,6 +117,7 @@ function Player(xPos, yPos) {
     this.maxSpeed = 8;
     this.setHitbox(35, 34);
     this.lastMorph = 0;
+    this.makeMorphCooldown = 3000;
     }
 Player.prototype.createNode = function() {
     img = document.createElement('img');
@@ -130,13 +137,23 @@ Player.prototype.walkY = function(d) {
         }
     }
 Player.prototype.makeMorph = function() {
-    if (Math.abs(this.lastMorph - Date.now()) < 3) return;
+    if (Date.now() - this.lastMorph < this.makeMorphCooldown) {
+        return;
+        }
     for (var i=0; i<game.entities.length; i++) {
         var e = game.entities[i];
         if (e instanceof NPC && this.collidesWith(e) && e.shape == 0) {
-            e.morph();
-            this.lastMorph = Date.now();
-            return;
+            observer = e.findNearestOther(1)
+            dist = e.distTo(observer);
+            if (dist <= 12) {
+                observer.bust(e);
+                e.getBusted();
+                }
+            else {
+                e.morph();
+                this.lastMorph = Date.now();
+                return;
+                }
             }
         }
     }
@@ -151,6 +168,9 @@ function NPC(xPos, yPos, alive) {
     this.setHitbox(NPC.size, NPC.size);
     this.morphing = 0;
     this.maxSpeed = 2;
+    this.chaseMode = 0;
+    this.toChase = null;
+    this.busted = 0;
     }
 NPC.prototype.morph = function() {
     if (this.morphing) return;
@@ -226,12 +246,14 @@ NPC.prototype.xDirTo = function(o) {
 NPC.prototype.yDirTo = function(o) {
     return (o.yPos - this.yPos < 0 ? -1 : 1);
     }
-NPC.prototype.findNearestOther = function() {
+NPC.prototype.findNearestOther = function(mode) {
+    // mode 0 = any, mode 1 = only NPCs
     var nearest = null;
     var min_dist = 9001;
     for (var i=0; i<game.entities.length; i++) {
         var o = game.entities[i];
         if (o == this) continue;
+        if (mode == 1 && !(o instanceof NPC)) continue;
         var dist = this.distTo(o);
         if (dist < 1) {
             o.accX(Math.round((Math.random()-.5)*2))
@@ -246,7 +268,15 @@ NPC.prototype.findNearestOther = function() {
     }
 
 NPC.prototype.socialize = function() {
-    candidate = this.findNearestOther();
+    /* TODO:
+        make this function just choose whom to chase or run from
+        and then use the chase function
+    */
+    if (this.chaseMode == 1) {
+        this.chase(this.toChase);
+        return;
+        }
+    candidate = this.findNearestOther(0);
     minDist = (candidate.shape == 0 ? 10 : 0);
     modifier = 1;
     if (this.distTo(candidate) < 9 && candidate.shape == 0 && this.shape == 0) {
@@ -273,17 +303,39 @@ NPC.prototype.socialize = function() {
             }
         }
     }
+NPC.prototype.chase = function(target) {
+    if (game.entities.indexOf(target) == -1) {
+        this.chaseMode = 0;
+        this.maxSpeed = 2;
+        return;
+        }
+    if(Math.abs(this.xSpeed)<this.maxSpeed) {
+        this.accX(this.xDirTo(target));
+        }
+    else {
+        this.decel();
+        }
+    if(Math.abs(this.ySpeed)<this.maxSpeed) {
+        this.accY(this.yDirTo(target));
+        }
+    else {
+        this.decel();
+        }
+    }
 
-NPC.prototype.repoduce = function() {
+NPC.prototype.reproduce = function() {
+    if (this.chaseMode == 1) return; // busting
     for (var i=0; i<game.entities.length; i++) {
         var o = game.entities[i];
         if (o == this) continue;
         if (!(o instanceof NPC)) continue;
         if (this.distTo(o) > 1) continue;
+        if (this.busted == 1) {
+            this.die();
+            }
         if (this.shape != o.shape) { // one star, one hat
             if (this.shape == 1) this.morph();
             else {
-                console.log(o);
                 o.morph();
                 }
             child = new NPC(this.xPos, o.yPos, 1);
@@ -291,6 +343,23 @@ NPC.prototype.repoduce = function() {
             child.spawn();
             }
         }
+    }
+
+NPC.prototype.bust = function(busted) {
+    this.maxSpeed = 4;
+    this.chaseMode = 1;
+    this.toChase = busted;
+    setTimeout((function(self) {return function() { self.maxSpeed = 2; self.chaseMode = 0; }})(this), 20000);
+    }
+
+NPC.prototype.getBusted = function() {
+    this.busted = 1;
+    this.node.style["background-repeat"] = 'no-repeat';
+    this.node.style["background-image"] = "url('img/player.png')";
+    }
+
+NPC.prototype.die = function() {
+    this.deSpawn();
     }
 
 /* - not entities - */
@@ -304,12 +373,9 @@ function Game() {
 Game.prototype.start = function() {
     this.player = new Player(250, 250);
     this.player.spawn();
-    this.entities.push(this.player);
 
     adam = new NPC(0, 200, 1);
     eve = new NPC(500, 40, 1);
-    this.entities.push(adam);
-    this.entities.push(eve);
     adam.spawn();
     eve.spawn();
 
@@ -362,7 +428,7 @@ Game.prototype.tick = function() {
         if (e instanceof NPC) {
             population += 1;
             e.socialize();
-            e.repoduce();
+            e.reproduce();
             }
         if (e instanceof Player) {
             for (var j=0; j<this.entities.length; j++) {
